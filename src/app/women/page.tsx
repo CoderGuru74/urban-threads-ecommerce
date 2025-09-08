@@ -1,56 +1,83 @@
+// src/app/women/page.tsx
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import ProductGrid from "@/components/products/ProductGrid";
 import { pageTransition, fadeInUp } from "@/lib/animations";
-
-const womenProducts = [
-  {
-    id: "w1",
-    name: "Elegant Blouse",
-    price: 69,
-    imageUrl: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop",
-    href: "/products/w1"
-  },
-  {
-    id: "w2",
-    name: "Summer Dress",
-    price: 99,
-    imageUrl: "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop",
-    href: "/products/w2"
-  },
-  {
-    id: "w3",
-    name: "Denim Skirt",
-    price: 59,
-    imageUrl: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop",
-    href: "/products/w3"
-  },
-  {
-    id: "w4",
-    name: "Cardigan Sweater",
-    price: 89,
-    imageUrl: "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop",
-    href: "/products/w4"
-  }
-];
+import { womenProducts } from "@/lib/dummy-data"; // <-- Import from central file
 
 export default function WomenPage() {
+  const [products, setProducts] = useState(womenProducts);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("all");
+
+  const handleFilterChange = async (filter: string) => {
+    if (filter === selectedFilter) return;
+    
+    setIsLoading(true);
+    setSelectedFilter(filter);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (filter === "all") {
+      setProducts(womenProducts);
+    } else {
+      const filteredProducts = womenProducts.filter(
+        (product) => product.category === filter
+      );
+      setProducts(filteredProducts);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const filters = [
+    { id: "all", label: "All Items" },
+    { id: "tops", label: "Tops" },
+    { id: "bottoms", label: "Bottoms" },
+    { id: "dresses", label: "Dresses" },
+  ];
+
   return (
     <motion.div
       initial="initial"
       animate="animate"
       exit="exit"
       variants={pageTransition}
+      className="container max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"
     >
-      <Header />
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <motion.div variants={fadeInUp} className="mb-8">
-          <h1 className="text-4xl font-bold text-charcoal mb-4">Women's Collection</h1>
-          <p className="text-gray-600 text-lg">Elegant styles for the modern woman</p>
+      <main>
+        <motion.div variants={fadeInUp} className="text-center mb-12">
+          <h1 className="text-4xl font-heading font-bold text-charcoal mb-4">
+            Women&apos;s Collection
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Elegant styles for the modern woman
+          </p>
         </motion.div>
 
-        <ProductGrid products={womenProducts} />
+        {/* Filters */}
+        <motion.div 
+          variants={fadeInUp}
+          className="flex flex-wrap items-center justify-center gap-4 mb-12"
+        >
+          {filters.map((filter) => (
+            <button
+              key={filter.id}
+              onClick={() => handleFilterChange(filter.id)}
+              className={`px-6 py-2 rounded-full border-2 transition-all duration-300 ${
+                selectedFilter === filter.id
+                  ? 'border-blue bg-blue text-white shadow-md'
+                  : 'border-gray-200 text-charcoal hover:border-blue hover:text-blue'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </motion.div>
+
+        <ProductGrid products={products} isLoading={isLoading} />
       </main>
     </motion.div>
   );
